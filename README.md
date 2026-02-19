@@ -19,19 +19,73 @@ Neste processo eu aprendi:
 Uma empresa precisa processar pedidos de reembolso com diferentes níveis de aprovação baseados no valor. 
 O código atual usa condicionais gigantes e está difícil de manter quando novos níveis de aprovação são adicionados.
 
-## Solução
-Para resolver os problemas de acoplamento e complexidade condicional, implementamos o padrão **Chain of Responsibility**.
+## Solução: Chain of Responsibility
 
-### Arquitetura
-1. **ApprovalHandler**: Classe base abstrata que define o comportamento padrão de encadear chamadas.
-2. **Handlers Concretos**: Cada cargo (Supervisor, Gerente, Diretor, CEO) é uma classe separada com sua própria regra de aprovação.
-3. **Encadeamento Dinâmico**: A cadeia é montada em tempo de execução (`supervisor -> gerente -> diretor -> ceo`), permitindo flexibilidade total.
+### Sobre o Padrão
+O **Chain of Responsibility** (Cadeia de Responsabilidade) é um padrão comportamental que permite passar pedidos por uma corrente de handlers. Ao receber um pedido, cada handler decide se o processa ou o passa para o próximo handler da corrente.
 
-### Benefícios Alcançados
-* **Desacoplamento**: Quem envia o pedido não precisa saber quem vai aprovar.
-* **Single Responsibility**: Cada classe cuida apenas da sua regra de negócio.
-* **Open/Closed Principle**: Novos níveis de aprovação podem ser adicionados sem tocar no código existente dos outros handlers.
-* **Flexibilidade**: A ordem dos aprovadores pode ser alterada facilmente na composição da cadeia.
+Isso desacopla o remetente de quem realmente processa o pedido, permitindo que múltiplos objetos tenham a chance de tratar a requisição.
+
+### Diagrama de Classes
+```mermaid
+classDiagram
+    class ExpenseRequest {
+        +string EmployeeName
+        +decimal Amount
+        +string Purpose
+        +string Department
+    }
+
+    class ApprovalHandler {
+        -ApprovalHandler _nextHandler
+        +SetNext(ApprovalHandler)
+        +Handle(ExpenseRequest)
+    }
+
+    class SupervisorHandler {
+        +Handle(ExpenseRequest)
+    }
+
+    class GerenteHandler {
+        +Handle(ExpenseRequest)
+    }
+
+    class DiretorHandler {
+        +Handle(ExpenseRequest)
+    }
+
+    class CeoHandler {
+        +Handle(ExpenseRequest)
+    }
+
+    ApprovalHandler <|-- SupervisorHandler
+    ApprovalHandler <|-- GerenteHandler
+    ApprovalHandler <|-- DiretorHandler
+    ApprovalHandler <|-- CeoHandler
+    ApprovalHandler o-- ApprovalHandler : Próximo
+    ApprovalHandler ..> ExpenseRequest : Usa
+```
+
+### Estrutura de Arquivos
+```
+src
+├── ApprovalHandler.cs      # Classe base abstrata
+├── CeoHandler.cs          # Handler para > R$ 5.000
+├── Challenge.cs           # Código legado (original)
+├── ChainOfResponsibility.csproj
+├── DiretorHandler.cs      # Handler até R$ 5.000
+├── ExpenseRequest.cs      # Modelo de dados
+├── GerenteHandler.cs      # Handler até R$ 500
+├── Program.cs             # Ponto de entrada e configuração da cadeia
+└── SupervisorHandler.cs   # Handler até R$ 100
+```
+
+### Etapas da Refatoração
+1.  **Extração do Modelo**: Separação da classe `ExpenseRequest` do código monolítico original.
+2.  **Criação da Abstração**: Definição da classe base `ApprovalHandler` com a lógica de encadeamento (`SetNext` e `Handle`).
+3.  **Implementação dos Handlers**: Criação das classes concretas (`Supervisor`, `Gerente`, `Diretor`, `CEO`), movendo a lógica condicional de cada nível para sua respectiva classe.
+4.  **Configuração da Cadeia**: No `Program.cs`, as instâncias foram criadas e conectadas sequencialmente.
+5.  **Execução**: O cliente envia o pedido apenas para o primeiro item da cadeia (Supervisor), que propaga conforme necessário.
 
 ## Sobre o CarnaCode 2026
 O desafio **CarnaCode 2026** consiste em implementar todos os 23 padrões de projeto (Design Patterns) em cenários reais. Durante os 23 desafios desta jornada, os participantes são submetidos ao aprendizado e prática na idetinficação de códigos não escaláveis e na solução de problemas utilizando padrões de mercado.
