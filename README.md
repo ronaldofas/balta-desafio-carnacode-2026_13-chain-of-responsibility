@@ -14,9 +14,24 @@ Neste processo eu aprendi:
 * ✅ SOLID
 * ✅ Design Patterns (Padrões de Projeto)
 
+
 ## Problema
 Uma empresa precisa processar pedidos de reembolso com diferentes níveis de aprovação baseados no valor. 
 O código atual usa condicionais gigantes e está difícil de manter quando novos níveis de aprovação são adicionados.
+
+## Solução
+Para resolver os problemas de acoplamento e complexidade condicional, implementamos o padrão **Chain of Responsibility**.
+
+### Arquitetura
+1. **ApprovalHandler**: Classe base abstrata que define o comportamento padrão de encadear chamadas.
+2. **Handlers Concretos**: Cada cargo (Supervisor, Gerente, Diretor, CEO) é uma classe separada com sua própria regra de aprovação.
+3. **Encadeamento Dinâmico**: A cadeia é montada em tempo de execução (`supervisor -> gerente -> diretor -> ceo`), permitindo flexibilidade total.
+
+### Benefícios Alcançados
+* **Desacoplamento**: Quem envia o pedido não precisa saber quem vai aprovar.
+* **Single Responsibility**: Cada classe cuida apenas da sua regra de negócio.
+* **Open/Closed Principle**: Novos níveis de aprovação podem ser adicionados sem tocar no código existente dos outros handlers.
+* **Flexibilidade**: A ordem dos aprovadores pode ser alterada facilmente na composição da cadeia.
 
 ## Sobre o CarnaCode 2026
 O desafio **CarnaCode 2026** consiste em implementar todos os 23 padrões de projeto (Design Patterns) em cenários reais. Durante os 23 desafios desta jornada, os participantes são submetidos ao aprendizado e prática na idetinficação de códigos não escaláveis e na solução de problemas utilizando padrões de mercado.
